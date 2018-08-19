@@ -8,12 +8,21 @@ class App extends Component {
     return (
       <div>
 
-        <div>ben macintosh</div>
+        <div>ben macintosh selected</div>
         <p/>
 
-
+        <div>new precedence</div>
         <div>new</div>
         <a href="https://google.com" style={{color:'blue'}}>google </a>
+        <p/>
+
+        <div>tools</div>
+
+        <div>writing</div>
+
+        <div>gardening/floristry</div>
+        <div>cv</div>        
+        <a href="https://drive.google.com/open?id=1DjjcdPYN1j7c2EsNROreW2KpkhduQtXD" syle={{color:'blue'}}>https://drive.google.com/open?id=1DjjcdPYN1j7c2EsNROreW2KpkhduQtXD</a>
         <p/>
 
         <div>cv</div>        
