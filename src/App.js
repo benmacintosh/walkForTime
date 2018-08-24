@@ -20,8 +20,7 @@ class App extends Component {
 
         <div>writing</div>
 
-        <div>gardening/floristry</div>
-        <div>cv</div>        
+        <div>gardening/floristry</div>   
         <a href="https://drive.google.com/open?id=1DjjcdPYN1j7c2EsNROreW2KpkhduQtXD" syle={{color:'blue'}}>https://drive.google.com/open?id=1DjjcdPYN1j7c2EsNROreW2KpkhduQtXD</a>
         <p/>
 
