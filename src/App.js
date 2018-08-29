@@ -13,12 +13,16 @@ class App extends Component {
 
         <div>new precedence</div>
         <div>new</div>
-        <a href="https://google.com" style={{color:'blue'}}>google </a>
+        <a href="https://google.com" style={{color:'blue'}}>google</a>
+        <div></div>
+        <a href="https://www.youtube.com/watch?v=MxwvtaswDYY" style={{color:'blue'}}>https://www.youtube.com/watch?v=MxwvtaswDYY</a> <div></div>
+        <a href="https://drive.google.com/open?id=1TkU_3pCP1_GgNQi1a_JKRGwaxE-HG3uZ" style={{color:'blue'}}>https://drive.google.com/open?id=1TkU_3pCP1_GgNQi1a_JKRGwaxE-HG3uZ </a>
         <p/>
 
-        <div>tools</div>
+        {/*<div>tools</div>
 
-        <div>writing</div>
+        // <div>writing</div
+        */}
 
         <div>gardening/floristry</div>   
         <a href="https://drive.google.com/open?id=1DjjcdPYN1j7c2EsNROreW2KpkhduQtXD" syle={{color:'blue'}}>https://drive.google.com/open?id=1DjjcdPYN1j7c2EsNROreW2KpkhduQtXD</a>
@@ -29,7 +33,7 @@ class App extends Component {
         <p/>
 
         <a href="https://www.instagram.com/0008000000macintosh/" style={{color:'blue'}}>https://www.instagram.com/0008000000macintosh/</a>
-        <p/>
+        <div></div>
         <img src={img2} alt="" width="88"/>
         <img src={img} alt="" width="88"/>
 
