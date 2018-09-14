@@ -1,8 +1,8 @@
 {
-  "name": "bm0l",
+  "name": "meetingPointOfShortestTravel",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://benmacintosh.github.io/bm0l",
+  "homepage": "https://benmacintosh.github.io/meetingPointOfShortestTravel/",
   "dependencies": {
     "gh-pages": "^1.2.0",
     "react": "^16.4.2",
