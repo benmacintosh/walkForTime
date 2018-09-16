@@ -2,11 +2,12 @@
   "name": "meetingPointOfShortestTravel",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://benmacintosh.github.io/meetingPointOfShortestTravel/",
+  "homepage": "https://benmacintosh.github.io/meetingPointOfShortestTravel",
   "dependencies": {
     "gh-pages": "^1.2.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+    "react-google-maps": "^9.4.5",
     "react-scripts": "1.1.4"
   },
   "scripts": {
