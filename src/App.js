@@ -1,8 +1,6 @@
 import React, {Component, PureComponent} from 'react';
 import './App.css';
-import img from './img1.jpg'
-import img2 from './img2.png'
-
+import img from './img1.JPG'
 
 
 class AddressForm extends Component {
@@ -108,12 +106,11 @@ class Algorithm extends PureComponent {
 
         //join into 1 call
 
-
         var distanceapi = new window.google.maps.DistanceMatrixService;
         distanceapi.getDistanceMatrix({
             origins: as,
             destinations: destinations,
-            travelMode: 'TRANSIT',
+            travelMode: 'WALKING',//TRANSIT
             unitSystem: window.google.maps.UnitSystem.METRIC
         },function(response,status){
             if(status!=='OK'){
@@ -202,6 +199,10 @@ class Algorithm extends PureComponent {
 
 
 
+    // but also try and make these travel times closer to eachoterh
+
+
+
 
 // return finalpoitn, dont need render function
 
@@ -212,6 +213,8 @@ class Algorithm extends PureComponent {
             <div>newprfinlpt</div>
             <div>
             {this.state.finalpoint.lat}
+            </div>
+            <div>
             {this.state.finalpoint.lng}
             </div>
             </div>
@@ -223,29 +226,25 @@ class Algorithm extends PureComponent {
 
 
 
-{/*
-    given intial latlngs, and methods
-
-    oninit, create grid,
-
-    start search, callibg distance api
-
-
-    just render return final location 
-*/}
-
-
-
-export default class App extends PureComponent {
+export default class App extends Component {
     constructor(props){
         super(props);
-        this.state = {numberAddress: 0}
+        this.state = {forms: [<AddressForm key ="1"/>,<AddressForm key="2"/>],
+            origins: []
+        }
 
-        this.handleChange = this.handleChange.bind(this)
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit=this.handleSubmit.bind(this);
     }
 
     handleChange(event){
-        this.setState({numberAddress: 3})
+        console.log(this.state.forms);
+        this.setState({numberAddress: this.state.forms.push(<AddressForm key={(this.state.forms.length+1).toString()}/>)});
+        this.forceUpdate();
+    }
+
+    handleSubmit(event){
+
     }
 
 
@@ -253,20 +252,23 @@ export default class App extends PureComponent {
     return (
       <div>
 
-
-        <AddressForm />
-        <AddressForm />
-        <AddressForm />
+        <div>
+        {this.state.forms}
+        </div>
 
         <button onClick={this.handleChange}>+</button>
+
+        <button onClick={this.handleSubmit}>_</button>
 
         <div>new precedence</div>
         <div>new</div>
         <a href="https://google.com" style={{color:'blue'}}>google</a>
         <div></div>
 
-        <img src={img2} alt="" width="88"/>
         <img src={img} alt="" width="88"/>
+
+        <div></div>
+        <a href="https://paypal.me/benmacintosh" style={{color:'blue'}}>https://paypal.me/benmacintosh</a>
 
         <Algorithm />
 
