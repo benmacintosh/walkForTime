@@ -7,40 +7,50 @@ class AddressForm extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {value: "", suggestions: [""], method: ""};
+        this.state = {value: "", method: "", methods: ["TRANSIT","WALKING","DRIVING"]};
+
 
         this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit= this.handleSubmit.bind(this);
+        this.onClickAuto1 = this.onClickAuto1.bind(this);
+        this.onClickAuto2 = this.onClickAuto2.bind(this);
+        this.onClickAuto3 = this.onClickAuto3.bind(this);
     }
 
     handleChange(event){
         this.setState({value: event.target.value});
-        var input = this.state.value
-        console.log(window)
-        // var ins = document.createElement('HTMLInputElement')
-        // console.log(ins)
-        //-33.896919, 151.171899")
-        // console.log(window.google.maps.DistanceMatrixService(<htmlinputelement>"dd"</htmlinputelement>))
-        // console.log(window.google.maps.LatLng(<htmlinputelement>6,10</htmlinputelement>))
-        // onsole.log(window.google.maps.places)
-        // var auto = window.google.maps.places.Autocomplete(input);
-        // console.log(auto)
-
-        //clikcabel suggestions<a onClick={this.handleClick} style={{cursor: 'pointer'}}>click me!</a>
+        var autocompleteapi = new window.google.maps.places.Autocomplete(document.getElementById(this.props.id));
+        console.log("from apiautocom")
+        console.log(autocompleteapi)
     }
 
-    handleSubmit(event){
-        console.log(event)
+    onClickAuto1(event){
+        this.setState({method:this.state.methods[0]})
+
     }
+    onClickAuto2(event){
+        this.setState({method: this.state.methods[1]})
+
+    }
+    onClickAuto3(event){
+        this.setState({method: this.state.methods[2]})
+    }
+    componentDidUpdate(props){
+        this.props.callFromKids(this.state);
+    }
+
 
 
     render(){
         return(
             <div>
 
-            <form onSubmit={this.handleSubmit}>
-                <input type = "text" value = {this.state.value} onChange = {this.handleChange} />
-            </form>
+            <input type = "text" id={this.props.id} value = {this.state.value} onChange = {this.handleChange} />
+
+            <a onClick={this.onClickAuto1} style={{color:'blue'}}> {this.state.methods[0]}, </a>
+            <a onClick={this.onClickAuto2} style={{color:'blue'}}> {this.state.methods[1]}, </a>
+            <a onClick={this.onClickAuto3} style={{color:'blue'}}> {this.state.methods[2]} </a>
+
+
             </div>
         );
     }
@@ -56,15 +66,22 @@ class Algorithm extends PureComponent {
             latlngs: [[-33.896919, 151.171899][-33.896425, 151.183834]],
             methods: ["public transport","walk"],
             finalpoint: {},
-            que: [[]]
+            que: [[]],
+            runalg: false,
+            didrunalg: false,
+
         }
 
-        this.componentDidMount = this.componentDidMount.bind(this);
+        this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.setState = this.setState.bind(this);
     }
 
-    componentDidMount(props){
+    componentDidUpdate(props){
+        console.log(props)
         // dense grid of points, into priorirty que
+        if(this.props.datafromapp.runalg && !this.state.didrunalg){
+            this.setState({didrunalg: true})
+            console.log("es")
         var left,right,top,bot;
         var density = 3;
         var latdisc = (-33.896919+33.896425)/density;
@@ -174,10 +191,9 @@ class Algorithm extends PureComponent {
         },4000)
 
     },11000);
-
-
     }
 
+}
 
 
 
@@ -229,22 +245,31 @@ class Algorithm extends PureComponent {
 export default class App extends Component {
     constructor(props){
         super(props);
-        this.state = {forms: [<AddressForm key ="1"/>,<AddressForm key="2"/>],
-            origins: []
+        this.state = {forms: [<AddressForm callFromKids = {this.callFromKids} key ="1" id="1"/>,<AddressForm callFromKids = {this.callFromKids} key="2" id="2"/>],
+            origins: [],
+            methods: [],
+            runalg: false
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit=this.handleSubmit.bind(this);
+        this.callFromKids = this.handleSubmit.bind(this);
     }
 
     handleChange(event){
         console.log(this.state.forms);
-        this.setState({numberAddress: this.state.forms.push(<AddressForm key={(this.state.forms.length+1).toString()}/>)});
+        this.setState({numberAddress: this.state.forms.push(<AddressForm key={(this.state.forms.length+1).toString()} id={(this.state.forms.length+1).toString()} callFromKids = {this.callFromKids}/>)});
         this.forceUpdate();
     }
 
     handleSubmit(event){
+        this.setState({runalg: true})
+    }
 
+    callFromKids = (data) =>{
+        console.log("data sfrom parentpersecitve")
+        console.log(data)
+        this.setState(data);
     }
 
 
@@ -270,7 +295,7 @@ export default class App extends Component {
         <div></div>
         <a href="https://paypal.me/benmacintosh" style={{color:'blue'}}>https://paypal.me/benmacintosh</a>
 
-        <Algorithm />
+        <Algorithm datafromapp={this.state}/>
 
 
     {/*algortihm, renderonce */}
