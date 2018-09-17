@@ -7,7 +7,7 @@ class AddressForm extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {value: "", method: "", methods: ["TRANSIT","WALKING","DRIVING"]};
+        this.state = {value: "", method: "", methods: ["TRANSIT","WALKING","DRIVING"], id: this.props.id, latlng: ["",""]};
 
 
         this.handleChange = this.handleChange.bind(this);
@@ -21,6 +21,17 @@ class AddressForm extends Component {
         var autocompleteapi = new window.google.maps.places.Autocomplete(document.getElementById(this.props.id));
         console.log("from apiautocom")
         console.log(autocompleteapi)
+        var latlng = ["",""]
+        window.google.maps.event.addListener(autocompleteapi, 'place_changed', function () {
+            console.log(autocompleteapi.getPlace().geometry.location.lat())
+
+            //WORKING UP TO HERE
+
+            latlng = [autocompleteapi.getPlace().geometry.location.lat,autocompleteapi.getPlace().geometry.location.lng]
+        })
+        this.setState({latlng: latlng})
+        console.log("this state")
+        console.log(this.state)
     }
 
     onClickAuto1(event){
@@ -46,9 +57,11 @@ class AddressForm extends Component {
 
             <input type = "text" id={this.props.id} value = {this.state.value} onChange = {this.handleChange} />
 
-            <a onClick={this.onClickAuto1} style={{color:'blue'}}> {this.state.methods[0]}, </a>
-            <a onClick={this.onClickAuto2} style={{color:'blue'}}> {this.state.methods[1]}, </a>
-            <a onClick={this.onClickAuto3} style={{color:'blue'}}> {this.state.methods[2]} </a>
+            <a onClick={this.onClickAuto1} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[0]}</a>
+            <a>, </a>
+            <a onClick={this.onClickAuto2} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[1]}</a>
+            <a>, </a>
+            <a onClick={this.onClickAuto3} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[2]}</a>
 
 
             </div>
@@ -63,11 +76,12 @@ class Algorithm extends PureComponent {
     constructor(props){
         super(props);
         this.state = {
-            latlngs: [[-33.896919, 151.171899][-33.896425, 151.183834]],
-            methods: ["public transport","walk"],
+            // latlngs: [[-33.896919, 151.171899][-33.896425, 151.183834]],
+            // methods: ["public transport","walk"],
+            latlngs: this.props.origins,
+            methods: this.props.methods,
             finalpoint: {},
             que: [[]],
-            runalg: false,
             didrunalg: false,
 
         }
@@ -82,7 +96,7 @@ class Algorithm extends PureComponent {
         if(this.props.datafromapp.runalg && !this.state.didrunalg){
             this.setState({didrunalg: true})
             console.log("es")
-        var left,right,top,bot;
+        var left,right,top,bot; //min of lat, max of lng etc
         var density = 3;
         var latdisc = (-33.896919+33.896425)/density;
         var lngdisc = (151.183834-151.171899)/density;
@@ -233,6 +247,7 @@ class Algorithm extends PureComponent {
             <div>
             {this.state.finalpoint.lng}
             </div>
+            refresh for new search
             </div>
             );
     }
@@ -245,9 +260,9 @@ class Algorithm extends PureComponent {
 export default class App extends Component {
     constructor(props){
         super(props);
-        this.state = {forms: [<AddressForm callFromKids = {this.callFromKids} key ="1" id="1"/>,<AddressForm callFromKids = {this.callFromKids} key="2" id="2"/>],
-            origins: [],
-            methods: [],
+        this.state = {forms: [<AddressForm callFromKids = {this.callFromKids} key ="0" id="0"/>,<AddressForm callFromKids = {this.callFromKids} key="1" id="1"/>],
+            origins: ["",""],
+            methods: ["",""],
             runalg: false
         }
 
@@ -258,7 +273,8 @@ export default class App extends Component {
 
     handleChange(event){
         console.log(this.state.forms);
-        this.setState({numberAddress: this.state.forms.push(<AddressForm key={(this.state.forms.length+1).toString()} id={(this.state.forms.length+1).toString()} callFromKids = {this.callFromKids}/>)});
+        this.setState({numberAddress: this.state.forms.push(<AddressForm key={(this.state.forms.length).toString()} id={(this.state.forms.length).toString()} callFromKids = {this.callFromKids}/>)});
+        this.setState({origins: this.state.origins.push(""), methods: this.state.methods.push("")});
         this.forceUpdate();
     }
 
@@ -267,9 +283,16 @@ export default class App extends Component {
     }
 
     callFromKids = (data) =>{
-        console.log("data sfrom parentpersecitve")
+        console.log("data sfrom parentpersecitve, just from recent change")
         console.log(data)
-        this.setState(data);
+        var neworigins = this.state.origins;
+        neworigins[data.id]=data.value;
+        var newmethods = this.state.methods;
+        newmethods[data.id]=data.method;
+        this.setState({origins: neworigins, methods: newmethods })
+        console.log("app state")
+        console.log(this.state)
+        // only update from unqieu kids
     }
 
 
