@@ -114,20 +114,7 @@ class Algorithm extends PureComponent {
             }
             console.log(lngs)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-            var left=Math.max.apply(null,lngs),right=Math.min.apply(null,lngs),top=Math.max.apply(null,lats),bot=Math.min.apply(null,lats); //min of lat, max of lng etc
+            var left=Math.min.apply(null,lngs),right=Math.max.apply(null,lngs),top=Math.max.apply(null,lats),bot=Math.min.apply(null,lats); //min of lat, max of lng etc
 
             console.log(left)
             console.log(right)
@@ -135,14 +122,19 @@ class Algorithm extends PureComponent {
             console.log(bot)
 
             var density = 3;
-            var latdisc = (-33.896919+33.896425)/density;
-            var lngdisc = (151.183834-151.171899)/density;
+            //var latdisc = (-33.896919+33.896425)/density;
+            var latdisc = Math.abs(top-bot)/density;
+            var lngdisc = latdisc;
+           // var lngdisc = (151.183834-151.171899)/density;
             console.log(lngdisc)
             var i, j;
-            var initlat = -33.896919, initlng = 151.171899;
+            //var initlat = -33.896919, initlng = 151.171899;
+            //start bottom left
+            var initlat = bot, initlng = left;
             var thislat = initlat, thislng = initlng;
-            var a = {lat: initlat, lng:initlng};
-            var b = {lat:-33.896425, lng:151.171899}
+            var a = {lat: latlngs[0][0], lng:latlngs[0][1]};
+            var b = {lat: latlngs[1][0], lng: latlngs[1][1]}
+            //var b = {lat:-33.896425, lng:151.171899}
 
             var que = [];
             var as = [];
@@ -178,7 +170,7 @@ class Algorithm extends PureComponent {
             distanceapi.getDistanceMatrix({
                 origins: as,
                 destinations: destinations,
-                travelMode: 'WALKING',//TRANSIT
+                travelMode: methods[0],//TRANSIT
                 unitSystem: window.google.maps.UnitSystem.METRIC
             },function(response,status){
                 if(status!=='OK'){
@@ -202,7 +194,7 @@ class Algorithm extends PureComponent {
             distanceapi.getDistanceMatrix({
                 origins: bs,
                 destinations: destinations,
-                travelMode: 'WALKING',
+                travelMode: methods[1],
                 unitSystem: window.google.maps.UnitSystem.METRIC
             },function(response,status){
                 if(status!=='OK'){
@@ -279,7 +271,7 @@ class Algorithm extends PureComponent {
             <div>
             <div>newprfinlpt</div>
             <div>
-            {this.state.finalpoint.lat}
+            {this.state.finalpoint.lat},
             </div>
             <div>
             {this.state.finalpoint.lng}
@@ -353,8 +345,10 @@ export default class App extends Component {
         <img src={img} alt="" width="88"/>
 
         <div></div>
+
         <a href="https://paypal.me/benmacintosh" style={{color:'blue'}}>https://paypal.me/benmacintosh</a>
 
+        <a> wait like 11 seconds after submitting '_' while algortihm talks to google </a>
         <Algorithm datafromapp={this.state}/>
 
 
