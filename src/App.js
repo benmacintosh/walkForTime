@@ -7,8 +7,9 @@ class AddressForm extends Component {
 
     constructor(props) {
         super(props);
+        console.log("addressform props")
+        console.log(props)
         this.state = {value: "", method: "", methods: ["TRANSIT","WALKING","DRIVING"], id: this.props.id, latlng: ["",""]};
-
 
         this.handleChange = this.handleChange.bind(this);
         this.onClickAuto1 = this.onClickAuto1.bind(this);
@@ -18,20 +19,22 @@ class AddressForm extends Component {
 
     handleChange(event){
         this.setState({value: event.target.value});
-        var autocompleteapi = new window.google.maps.places.Autocomplete(document.getElementById(this.props.id));
-        console.log("from apiautocom")
-        console.log(autocompleteapi)
+        var autocompleteapi = new window.google.maps.places.Autocomplete(document.getElementById(this.state.id));
         var latlng = ["",""]
+        var tempsetstate = this.setState.bind(this)
         window.google.maps.event.addListener(autocompleteapi, 'place_changed', function () {
-            console.log(autocompleteapi.getPlace().geometry.location.lat())
+            console.log("loc")
+            var place = autocompleteapi.getPlace()
+            var address = [
+              (place.address_components[0] && place.address_components[0].short_name || ''),
+              (place.address_components[1] && place.address_components[1].short_name || ''),
+              (place.address_components[2] && place.address_components[2].short_name || '')
+            ].join(' ');
 
             //WORKING UP TO HERE
-
-            latlng = [autocompleteapi.getPlace().geometry.location.lat,autocompleteapi.getPlace().geometry.location.lng]
+            latlng = [place.geometry.location.lat(),place.geometry.location.lng()]
+            tempsetstate({value: address, latlng: latlng})
         })
-        this.setState({latlng: latlng})
-        console.log("this state")
-        console.log(this.state)
     }
 
     onClickAuto1(event){
@@ -55,7 +58,7 @@ class AddressForm extends Component {
         return(
             <div>
 
-            <input type = "text" id={this.props.id} value = {this.state.value} onChange = {this.handleChange} />
+            <input type = "text" id={this.state.id} value = {this.state.value} onChange = {this.handleChange} />
 
             <a onClick={this.onClickAuto1} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[0]}</a>
             <a>, </a>
@@ -78,8 +81,8 @@ class Algorithm extends PureComponent {
         this.state = {
             // latlngs: [[-33.896919, 151.171899][-33.896425, 151.183834]],
             // methods: ["public transport","walk"],
-            latlngs: this.props.origins,
-            methods: this.props.methods,
+            latlngs: [],
+            methods: [],
             finalpoint: {},
             que: [[]],
             didrunalg: false,
@@ -91,121 +94,155 @@ class Algorithm extends PureComponent {
     }
 
     componentDidUpdate(props){
-        console.log(props)
+        console.log("alg state after comp update, and props passed")
+        console.log(this.state)
+        this.setState({latlngs: props.datafromapp.origins, methods: props.datafromapp.methods})
+
+        //CHECK ATLEAST 2 ORIGINS AND METHODS, else alert
+
         // dense grid of points, into priorirty que
         if(this.props.datafromapp.runalg && !this.state.didrunalg){
             this.setState({didrunalg: true})
+            var latlngs = this.state.latlngs;
+            var methods = this.state.methods;
             console.log("es")
-        var left,right,top,bot; //min of lat, max of lng etc
-        var density = 3;
-        var latdisc = (-33.896919+33.896425)/density;
-        var lngdisc = (151.183834-151.171899)/density;
-        console.log(lngdisc)
-        var i, j;
-        var initlat = -33.896919, initlng = 151.171899;
-        var thislat = initlat, thislng = initlng;
-        var a = {lat: initlat, lng:initlng};
-        var b = {lat:-33.896425, lng:151.171899}
 
-        var que = [];
-        var as = [];
-        var bs = [];
-        var timesa = [];
-        var timesb = [];
-
-        var destinations = [];
-        for(i=0; i<density;i++){
-            thislat = thislat+latdisc;
-            for(j=0;j<density;j++){
-                thislng = thislng+lngdisc;
-                que.push([thislat,thislng]);
-
-                destinations.push({lat: thislat, lng: thislng});
+            var lngs = [], lats = []; 
+            for(var i =0; i<latlngs.length; i++ ){
+                lats.push(latlngs[i][0])
+                lngs.push(latlngs[i][1])
             }
-            thislng = initlng;
-        }
-        console.log("que")
-        console.log(que)
-
-        for(var i =0; i<destinations.length;i++){
-            as.push(a);
-        }
-        for(var i =0; i<destinations.length;i++){
-            bs.push(b);
-        }
+            console.log(lngs)
 
 
-        //join into 1 call
 
-        var distanceapi = new window.google.maps.DistanceMatrixService;
-        distanceapi.getDistanceMatrix({
-            origins: as,
-            destinations: destinations,
-            travelMode: 'WALKING',//TRANSIT
-            unitSystem: window.google.maps.UnitSystem.METRIC
-        },function(response,status){
-            if(status!=='OK'){
-                alert('Error was: '+ status);
-            }else{
-                console.log("response")
-                console.log(response);
-                for(var i = 0; i<response.rows.length;i++){
-                    timesa.push(response.rows[i].elements[i].duration.value);
+
+
+
+
+
+
+
+
+
+
+
+            var left=Math.max.apply(null,lngs),right=Math.min.apply(null,lngs),top=Math.max.apply(null,lats),bot=Math.min.apply(null,lats); //min of lat, max of lng etc
+
+            console.log(left)
+            console.log(right)
+            console.log(top)
+            console.log(bot)
+
+            var density = 3;
+            var latdisc = (-33.896919+33.896425)/density;
+            var lngdisc = (151.183834-151.171899)/density;
+            console.log(lngdisc)
+            var i, j;
+            var initlat = -33.896919, initlng = 151.171899;
+            var thislat = initlat, thislng = initlng;
+            var a = {lat: initlat, lng:initlng};
+            var b = {lat:-33.896425, lng:151.171899}
+
+            var que = [];
+            var as = [];
+            var bs = [];
+            var timesa = [];
+            var timesb = [];
+
+            var destinations = [];
+            for(i=0; i<density;i++){
+                thislat = thislat+latdisc;
+                for(j=0;j<density;j++){
+                    thislng = thislng+lngdisc;
+                    que.push([thislat,thislng]);
+
+                    destinations.push({lat: thislat, lng: thislng});
                 }
-                console.log(timesa)
-
-                // ignore if undefined
+                thislng = initlng;
             }
-        }
-        );
+            console.log("que")
+            console.log(que)
 
-        var that = this;
-        setTimeout(function(){
-        var distanceapi = new window.google.maps.DistanceMatrixService;
-        distanceapi.getDistanceMatrix({
-            origins: bs,
-            destinations: destinations,
-            travelMode: 'WALKING',
-            unitSystem: window.google.maps.UnitSystem.METRIC
-        },function(response,status){
-            if(status!=='OK'){
-                alert('Error was: '+ status);
-            }else{
-                console.log("response")
-                console.log(response);
-                for(var i = 0; i<response.rows.length;i++){
-                    timesb.push(response.rows[i].elements[i].duration.value);
+            for(var i =0; i<destinations.length;i++){
+                as.push(a);
+            }
+            for(var i =0; i<destinations.length;i++){
+                bs.push(b);
+            }
+
+
+            //join into 1 call
+
+            var distanceapi = new window.google.maps.DistanceMatrixService;
+            distanceapi.getDistanceMatrix({
+                origins: as,
+                destinations: destinations,
+                travelMode: 'WALKING',//TRANSIT
+                unitSystem: window.google.maps.UnitSystem.METRIC
+            },function(response,status){
+                if(status!=='OK'){
+                    alert('Error was: '+ status);
+                }else{
+                    console.log("response")
+                    console.log(response);
+                    for(var i = 0; i<response.rows.length;i++){
+                        timesa.push(response.rows[i].elements[i].duration.value);
+                    }
+                    console.log(timesa)
+
+                    // ignore if undefined
                 }
-                console.log(timesb)
-
-                // ignore if undefined
             }
-        }
-        )
+            );
 
+            var that = this;
+            setTimeout(function(){
+            var distanceapi = new window.google.maps.DistanceMatrixService;
+            distanceapi.getDistanceMatrix({
+                origins: bs,
+                destinations: destinations,
+                travelMode: 'WALKING',
+                unitSystem: window.google.maps.UnitSystem.METRIC
+            },function(response,status){
+                if(status!=='OK'){
+                    alert('Error was: '+ status);
+                }else{
+                    console.log("response")
+                    console.log(response);
+                    for(var i = 0; i<response.rows.length;i++){
+                        timesb.push(response.rows[i].elements[i].duration.value);
+                    }
+                    console.log(timesb)
 
-
-        setTimeout(function(){
-        var mininddex = 0;
-        var minseconds = timesa[6]+timesb[6];
-        var thistime = 0;
-        for(var i = 0; i<timesa.length; i++){
-            thistime = timesa[i]+timesb[i];
-            if(thistime<minseconds){
-                console.log(mininddex)
-                minseconds=thistime;
-                mininddex=i;
+                    // ignore if undefined
+                }
             }
+            )
 
+
+
+            setTimeout(function(){
+            var mininddex = 0;
+            var minseconds = timesa[6]+timesb[6];
+            var thistime = 0;
+            for(var i = 0; i<timesa.length; i++){
+                thistime = timesa[i]+timesb[i];
+                if(thistime<minseconds){
+                    console.log(mininddex)
+                    minseconds=thistime;
+                    mininddex=i;
+                }
+
+            }
+            console.log(mininddex)
+            console.log(destinations[mininddex])
+            that.setState({finalpoint: destinations[mininddex]});
+
+            },4000)
+
+        },11000);
         }
-        console.log(mininddex)
-        console.log(destinations[mininddex])
-        that.setState({finalpoint: destinations[mininddex]});
-
-        },4000)
-
-    },11000);
-    }
 
 }
 
@@ -286,7 +323,7 @@ export default class App extends Component {
         console.log("data sfrom parentpersecitve, just from recent change")
         console.log(data)
         var neworigins = this.state.origins;
-        neworigins[data.id]=data.value;
+        neworigins[data.id]=data.latlng;
         var newmethods = this.state.methods;
         newmethods[data.id]=data.method;
         this.setState({origins: neworigins, methods: newmethods })
