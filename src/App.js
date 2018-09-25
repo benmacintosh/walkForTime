@@ -195,112 +195,134 @@ class Algorithm extends PureComponent {
 
 
 
+            //MAKE SURE COPIED PROEPRLY ETC, SO DESTINATIOSN STILL EXISTS
+
+            //NOT REDNEREING?
+            var destinationscopy = destinations.slice(0)
             //desitinations split
             var destinationssplits = [];
             while (destinations.length > 0){
-                destinationssplits.push(destinations.splice(0,3))
+                destinationssplits.push(destinationscopy.splice(0,3))
             }
+            console.log("destinationssplits")
+            console.log(destinationssplits)
+            console.log(destinations)
 
 
             var times = [];
-            for (var i =0; i<origins.length+1;i++){
-            //for each origin
+
             var thisorigintimes  = [];
+            var originsindex =0;
+            var destinationsplitsindex =0;
+            //for each origin and desitnations splits
 
-            for(var j=0;j<destinationssplits.length;j++){
+            console.log("pre time")
+            timeblock();
+            var that = this
+            function timeblock () {  
+                setTimeout(function(){
+
+                    //HERE SO DOESNT GLITCH AT ENDS
+                    if(destinationsplitsindex==destinationssplits.length){
+                        console.log("fin j")
+                        console.log(thisorigintimes)
+                        destinationsplitsindex=0;
+                        originsindex++;   
+                        times.push(thisorigintimes);
+                        thisorigintimes = [];
+                        console.log("origins and times")
+                        console.log(origins)
+                        console.log(times)    
+                    }
 
 
-                (function (i,j) {  
-                    //origin still here
-                    setTimeout(function(){
-                        console.log("j within timed")
-                        console.log(j)
+                    //AFTER GONE THROUGH ALL ORIGINS AND DESTINTIONSS, CODE SO HAPPENS IN TIME
+                    if(originsindex==origins.length){
+                        console.log("ended")
+                        console.log(times)
+                        console.log(originsindex)
 
-                        //AFTER GONE THROUGH ALL ORIGINS AND DESTINTIONSS, CODE SO HAPPENS IN TIME
-                        if(i==origins.length){
-
-                            var mininddex = 0;
-                            var minseconds = times[0][0]+times[1][0];
-                            var thistime = 0;
-                            for(var j = 0; i<times[0].length; j++){
-                            //through each destination,, and add time from each different locaiton to get there
-                            for (var i = 0; i<times.length;i++){
-                                if(typeof(times[i][j])!=="undefined"){//TEMP MANUAL DEAL WITH ASYNCROHICTY LEADING TO SOME UNDEFINED
-                                    thistime = thistime+times[i][j];
-                                }
+                        var mininddex = 0;
+                        var minseconds = times[0][0]+times[1][0];
+                        var thistime = 0;
+                        for(var j = 0; j<times[0].length; j++){
+                            console.log(j)
+                        //through each destination,, then through each origin and add time from each different locaiton to get there
+                        for (var i = 0; i<times.length;i++){
+                            console.log(i)
+                            if(typeof(times[i][j])!=="undefined"){//TEMP MANUAL DEAL WITH ASYNCROHICTY LEADING TO SOME UNDEFINED
+                                thistime = thistime+times[i][j];
+                                console.log(thistime)
                             }
-                            if(thistime<minseconds){
-                                console.log(mininddex)
-                                minseconds=thistime;
-                                mininddex=j;
-                            }
-                            console.log("destinations")
-                            console.log(destinations)
-
                         }
-                        console.log(mininddex)
+                        if(thistime<minseconds){
+                            console.log(mininddex)
+                            minseconds=thistime;
+                            mininddex=j;
+                        }
+                        console.log("destinations")
                         console.log(destinations)
-                        console.log(destinations[mininddex])
-                        this.setState({finalpoint: destinations[mininddex]});
 
-                        //THEN BREAK
-                    }else{
+                    }
+                    console.log(mininddex)
+                    console.log(destinations)
+                    console.log(destinations[mininddex])
+                    that.setState({finalpoint: destinations[mininddex]});
 
-                        var thisdestinations = destinationssplits[j];
-                        console.log(j)
-                        console.log(destinationssplits)
-                        var thisorigins = [];
-                        for(var jj =0; jj<thisdestinations.length;jj++){
-                            thisorigins.push(origins[i]);//since needs equal arrays of input/destination pairs
-                        }
-                    // console.log("thisdestinations and origins")
-                    // console.log(i)
-                    // console.log(thisdestinations)
-                    // console.log(thisorigins)
-                    // console.log(methods)
+                    //THEN MAKE SURE BREAKS PROPERLY
+                    //SHOULD BREAK SINCE NO MORE CALLS
+
+
+                }else{
+
+                    console.log("j within timed")
+                    console.log(destinationsplitsindex)
+                    console.log("i within timed")
+                    console.log(originsindex)
+
+                    var thisdestinations = destinationssplits[destinationsplitsindex];
+                    var thisorigins = [];
+                    for(var jj =0; jj<thisdestinations.length;jj++){
+                        thisorigins.push(origins[originsindex]);//since needs equal arrays of input/destination pairs
+                    }
+
+                    console.log("thisdestinations and origins")
+                    console.log(thisdestinations)
+                    console.log(thisorigins)
+                    console.log(methods[originsindex])
 
                     //CATCH NO RESULTS ERROR
-
-
-
                     //INCORRECT DURATION VALUE
+
+                    //ADD departure_time paramter
+                    //trnasit mode etc
 
                     var distanceapi = new window.google.maps.DistanceMatrixService;
                     distanceapi.getDistanceMatrix({
                         origins: thisorigins,
                         destinations: thisdestinations,
-                        travelMode: methods[i],//TRANSIT
+                        travelMode: methods[originsindex],//TRANSIT
                         unitSystem: window.google.maps.UnitSystem.METRIC
                     },function(response,status){
+                        console.log("did soemthing api")
                         if(status!=='OK'){
                             alert('Error was: '+ status);
                             //IF OVER QUERY LIMIT THEN DEALY LONGER
                         }else{
-                            console.log("response")
-                            console.log(response.rows.length);
-                            for(var k = 0; i<response.rows.length;k++){
-                                //SOMETHING FROM ASYHNORHSNOUSITY BREAKING HERE
-
-                                
-                                if(k>=response.rows.length){
-                                    break;
-                                }
-                                console.log(response.rows[k].elements[k].duration.value)
-                                thisorigintimes.push(response.rows[k].elements[k].duration.value);
+                            console.log("response length,, not conctacting last 3, for first origin")
+                            console.log(response.rows.length)
+                            for(var k = 0; k<response.rows.length;k++){
+                                thisorigintimes = thisorigintimes.concat(response.rows[k].elements[k].duration.value);
                             }
                         }
                     }
                     )
+                    destinationsplitsindex++;
+                    timeblock();
                 }
+         },2000);
+    }
 
-                console.log("times after timed block?")
-                console.log(thisorigintimes)
-
-            },4000);
-                })(i,j)
-            }
-
-        }
 
 
 
