@@ -201,23 +201,54 @@ class Algorithm extends PureComponent {
                 destinationssplits.push(destinations.splice(0,3))
             }
 
+
             var times = [];
-            for (var i =0; i<origins.length;i++){
+            for (var i =0; i<origins.length+1;i++){
             //for each origin
             var thisorigintimes  = [];
 
-            myLoop1(i);
-            function myLoop1(i){
-                setTimeout(function(){
-
-                    for(var j=0;j<destinationssplits.length;j++){
-                        myLoop2(j);
-                        function myLoop2 (  j) {  
+            for(var j=0;j<destinationssplits.length;j++){
 
 
+                (function (i,j) {  
                     //origin still here
-                    setTimeout(function(){        
+                    setTimeout(function(){
+                        console.log("j within timed")
+                        console.log(j)
+
+                        //AFTER GONE THROUGH ALL ORIGINS AND DESTINTIONSS, CODE SO HAPPENS IN TIME
+                        if(i==origins.length){
+
+                            var mininddex = 0;
+                            var minseconds = times[0][0]+times[1][0];
+                            var thistime = 0;
+                            for(var j = 0; i<times[0].length; j++){
+                            //through each destination,, and add time from each different locaiton to get there
+                            for (var i = 0; i<times.length;i++){
+                                if(typeof(times[i][j])!=="undefined"){//TEMP MANUAL DEAL WITH ASYNCROHICTY LEADING TO SOME UNDEFINED
+                                    thistime = thistime+times[i][j];
+                                }
+                            }
+                            if(thistime<minseconds){
+                                console.log(mininddex)
+                                minseconds=thistime;
+                                mininddex=j;
+                            }
+                            console.log("destinations")
+                            console.log(destinations)
+
+                        }
+                        console.log(mininddex)
+                        console.log(destinations)
+                        console.log(destinations[mininddex])
+                        this.setState({finalpoint: destinations[mininddex]});
+
+                        //THEN BREAK
+                    }else{
+
                         var thisdestinations = destinationssplits[j];
+                        console.log(j)
+                        console.log(destinationssplits)
                         var thisorigins = [];
                         for(var jj =0; jj<thisdestinations.length;jj++){
                             thisorigins.push(origins[i]);//since needs equal arrays of input/destination pairs
@@ -243,13 +274,12 @@ class Algorithm extends PureComponent {
                     },function(response,status){
                         if(status!=='OK'){
                             alert('Error was: '+ status);
+                            //IF OVER QUERY LIMIT THEN DEALY LONGER
                         }else{
                             console.log("response")
                             console.log(response.rows.length);
                             for(var k = 0; i<response.rows.length;k++){
                                 //SOMETHING FROM ASYHNORHSNOUSITY BREAKING HERE
-
-
 
                                 
                                 if(k>=response.rows.length){
@@ -261,50 +291,23 @@ class Algorithm extends PureComponent {
                         }
                     }
                     )
-                },4000);
-                };
+                }
 
+                console.log("times after timed block?")
+                console.log(thisorigintimes)
+
+            },4000);
+                })(i,j)
             }
 
-            times.push(thisorigintimes)
-        },4000);
-            }
         }
-        console.log("times")
-        console.log(times)
 
 
 
-
-        var that = this;
-        setTimeout(function(){
-            var mininddex = 0;
-            var minseconds = times[0][0]+times[1][0];
-            var thistime = 0;
-            for(var j = 0; i<times[0].length; j++){
-                //through each destination,, and add time from each different locaiton to get there
-                for (var i = 0; i<times.length;i++){
-                    if(typeof(times[i][j])!=="undefined"){//TEMP MANUAL DEAL WITH ASYNCROHICTY LEADING TO SOME UNDEFINED
-                    thistime = thistime+times[i][j];
-                }
-                }
-                if(thistime<minseconds){
-                    console.log(mininddex)
-                    minseconds=thistime;
-                    mininddex=j;
-                }
-                console.log("destinations")
-                console.log(destinations)
-
-            }
-            console.log(mininddex)
-            console.log(destinations)
-            console.log(destinations[mininddex])
-            that.setState({finalpoint: destinations[mininddex]});
-        },14000);//WHAT LEAST TIME CAN DO//destinationssplits.length*origins.length*1000);
-        }
+        //WHAT LEAST TIME CAN DO//destinationssplits.length*origins.length*1000);
 
     }
+}
 
 
 
