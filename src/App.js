@@ -52,7 +52,6 @@ class AddressForm extends Component {
         this.setState({method: this.state.methods[1]})
         this.setState({methods:["TRANSIT","WALKING<","DRIVING"]})
 
-
     }
     onClickAuto3(event){
         this.setState({methods:["TRANSIT","WALKING","DRIVING"]})
@@ -61,8 +60,27 @@ class AddressForm extends Component {
 
     }
     componentDidUpdate(props){
+        console.log("address form did update")
+        console.log(this.state)
+        console.log(this.props)
         this.props.callFromKids(this.state);
+        //SKIPS SETTING TO CALL FROM KIDS, WHEN FROM NEW ID STATE
+        //NEW CALLFROMKIDS IS UNBOUND, AND DEFAULTS TO HANDLESUBMIT
+        //FIXED
+
+
+
+
+
+        //BUT STOPPING APP FROM CHANGING TIS OWN STATE IMMEDIATLY
+
+
+
+
+
     }
+
+    //ON CLICK OR CHANGE OF NEW ADDRESS FORM, TRIGGERS SUBMIT
     onClick(event){
         this.setState({value: ""})
     }
@@ -99,23 +117,30 @@ class Algorithm extends PureComponent {
             finalpoint: {},
             que: [[]],
             didrunalg: false,
+            finaladdress: ""
 
         }
 
-        this.componentDidUpdate = this.componentDidUpdate.bind(this);
-        this.setState = this.setState.bind(this);
+        this.componentWillUpdate = this.componentWillUpdate.bind(this);
+        //NEED?
+        //this.setState = this.setState.bind(this);
     }
 
-    componentDidUpdate(props){
+    //FIXED BY CHAGNING FROM COMPOENTDIDTUPDATE
+    componentWillUpdate(props){
         console.log("algorithm state after comp update, and props passed")
         console.log(this.state)
+        console.log(props)
         this.setState({latlngs: props.datafromapp.origins, methods: props.datafromapp.methods})
 
         // dense grid of points, into priorirty que
 
 
+        //PROPRS VS THIS.PROPS?        
 
-        if(this.props.datafromapp.runalg && !this.state.didrunalg){
+
+
+        if(props.datafromapp.runalg && !this.state.didrunalg){
             if(this.state.latlngs.length==0){
                 alert("need atleast 2 origins")
             }
@@ -158,17 +183,9 @@ class Algorithm extends PureComponent {
             for(var i =0; i<latlngs.length;i++){
                 origins.push({lat: latlngs[i][0], lng: latlngs[i][1]})
             }
-
-
-            var a = {lat: latlngs[0][0], lng:latlngs[0][1]};
-            var b = {lat: latlngs[1][0], lng: latlngs[1][1]}
             //var b = {lat:-33.896425, lng:151.171899}
 
             var que = [];
-            var as = [];
-            var bs = [];
-            var timesa = [];
-            var timesb = [];
 
             var destinations = [];
             for(i=0; i<density;i++){
@@ -184,13 +201,6 @@ class Algorithm extends PureComponent {
             console.log("que")
             console.log(que)
 
-            for(var i =0; i<destinations.length;i++){
-                as.push(a);
-            }
-            for(var i =0; i<destinations.length;i++){
-                bs.push(b);
-            }
-
 
 
 
@@ -198,10 +208,10 @@ class Algorithm extends PureComponent {
             //MAKE SURE COPIED PROEPRLY ETC, SO DESTINATIOSN STILL EXISTS
 
             //NOT REDNEREING?
-            var destinationscopy = destinations.slice(0)
+            var destinationscopy = destinations.slice();
             //desitinations split
             var destinationssplits = [];
-            while (destinations.length > 0){
+            while (destinationscopy.length > 0){
                 destinationssplits.push(destinationscopy.splice(0,3))
             }
             console.log("destinationssplits")
@@ -236,38 +246,48 @@ class Algorithm extends PureComponent {
                     }
 
 
+                    //CHECK ARRAY BOUNDS
+
+
+
                     //AFTER GONE THROUGH ALL ORIGINS AND DESTINTIONSS, CODE SO HAPPENS IN TIME
                     if(originsindex==origins.length){
                         console.log("ended")
                         console.log(times)
-                        console.log(originsindex)
 
                         var mininddex = 0;
                         var minseconds = times[0][0]+times[1][0];
+                        console.log("minseconds")
+                        console.log(minseconds)
                         var thistime = 0;
                         for(var j = 0; j<times[0].length; j++){
-                            console.log(j)
                         //through each destination,, then through each origin and add time from each different locaiton to get there
                         for (var i = 0; i<times.length;i++){
-                            console.log(i)
                             if(typeof(times[i][j])!=="undefined"){//TEMP MANUAL DEAL WITH ASYNCROHICTY LEADING TO SOME UNDEFINED
                                 thistime = thistime+times[i][j];
-                                console.log(thistime)
                             }
                         }
+                        
                         if(thistime<minseconds){
-                            console.log(mininddex)
+                            console.log("reupdate min destination")
                             minseconds=thistime;
                             mininddex=j;
+                            thistime=0
+                        }else{
+                            thistime=0
                         }
-                        console.log("destinations")
-                        console.log(destinations)
 
                     }
+                    console.log("mininddex, and destinations")
                     console.log(mininddex)
                     console.log(destinations)
                     console.log(destinations[mininddex])
                     that.setState({finalpoint: destinations[mininddex]});
+
+                    //SET THE FINAL ADDRESS HERE
+
+
+
 
                     //THEN MAKE SURE BREAKS PROPERLY
                     //SHOULD BREAK SINCE NO MORE CALLS
@@ -320,6 +340,7 @@ class Algorithm extends PureComponent {
                     destinationsplitsindex++;
                     timeblock();
                 }
+
          },2000);
     }
 
@@ -353,15 +374,11 @@ class Algorithm extends PureComponent {
 
 render()
 {
+    var placeaddress = "http://www.google.com/maps/place/"+this.state.finalpoint.lat+","+this.state.finalpoint.lng;
     return(
         <div>
-        <div>newprfinlpt</div>
-        <div>
-        {this.state.finalpoint.lat},
-        </div>
-        <div>
-        {this.state.finalpoint.lng}
-        </div>
+        <div>newprfinlptresult</div>
+        <a href={placeaddress} style={{color:'blue'}}>{placeaddress}</a>
         refresh for new search
         </div>
         );
@@ -390,22 +407,35 @@ export default class App extends Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit=this.handleSubmit.bind(this);
-    this.callFromKids = this.handleSubmit.bind(this);
+    this.callFromKids = this.callFromKids.bind(this);
 }
 
 handleChange(event){
-    console.log(this.state.forms);
-    this.setState({numberAddress: this.state.forms.push(<AddressForm key={(this.state.forms.length).toString()} id={(this.state.forms.length).toString()} callFromKids = {this.callFromKids}/>)});
-
+    var newforms = this.state.forms
+    newforms.push(<AddressForm key={(this.state.forms.length).toString()} id = {(this.state.forms.length).toString()} callFromKids = {this.callFromKids} />)
+    this.setState({forms: newforms});
         //CHECK IDS NOT PASSING ERROR
+        var neworigins = this.state.origins
+        neworigins.push("")
+        var newmethods = this.state.methods
+        newmethods.push("")
+        this.setState({origins: neworigins, methods: newmethods});
 
-        this.setState({origins: this.state.origins.push(""), methods: this.state.methods.push("")});
+    console.log("state after +")
+    console.log(this.state)
+
+        //DONT NEED?
         this.forceUpdate();
     }
 
     handleSubmit(event){
+        console.log("_")
+        console.log(this.state)
         this.setState({runalg: true})
         this.setState({submitted: "submitted, wait like 11 secs"})
+        console.log(this.state)
+
+        //RENDERING STATE CHANGE, AND CALLING PASSING UPDATE AS PROPS, BEFORE, UPDATING THE STATE
     }
 
     callFromKids = (data) =>{
@@ -416,8 +446,6 @@ handleChange(event){
         var newmethods = this.state.methods;
         newmethods[data.id]=data.method;
         this.setState({origins: neworigins, methods: newmethods })
-        console.log("app state")
-        console.log(this.state)
         // only update from unqieu kids
     }
 
