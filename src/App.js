@@ -6,10 +6,8 @@ import img from './img1.JPG'
 class AddressForm extends Component {
 
     constructor(props) {
-        super(props);
-        console.log("addressform props")
-        console.log(props)
-        this.state = {value: "enter an origin then click method", method: "", methods: ["TRANSIT","WALKING","DRIVING"], id: this.props.id, latlng: ["",""]};
+        super(props);   
+        this.state = {value: "origin"+this.props.id, method: "", methods: ["TRANSIT","WALKING","DRIVING"], id: this.props.id, latlng: ["",""]};
 
         this.handleChange = this.handleChange.bind(this);
         this.onClickAuto1 = this.onClickAuto1.bind(this);
@@ -24,7 +22,7 @@ class AddressForm extends Component {
         var latlng = ["",""]
         var tempsetstate = this.setState.bind(this)
 
-        //make so doesnt call after EVERY KEYSTROKE  BTU AFTER SOME TIME
+        //make so doesnt call after EVERY KEYSTROKE  BTU AFTER SOME TIME delay
 
         //CHECK NEARBY USER
 
@@ -64,28 +62,11 @@ class AddressForm extends Component {
         console.log(this.state)
         console.log(this.props)
         this.props.callFromKids(this.state);
-        //SKIPS SETTING TO CALL FROM KIDS, WHEN FROM NEW ID STATE
-        //NEW CALLFROMKIDS IS UNBOUND, AND DEFAULTS TO HANDLESUBMIT
-        //FIXED
-
-
-
-
-
-        //BUT STOPPING APP FROM CHANGING TIS OWN STATE IMMEDIATLY
-
-
-
-
-
     }
 
-    //ON CLICK OR CHANGE OF NEW ADDRESS FORM, TRIGGERS SUBMIT
     onClick(event){
         this.setState({value: ""})
     }
-
-
 
     render(){
         return(
@@ -117,13 +98,13 @@ class Algorithm extends PureComponent {
             finalpoint: {},
             que: [[]],
             didrunalg: false,
-            finaladdress: ""
+            finaladdress: "",
+            timeblockcount: "",
+            totaltimeblocks: ""
 
         }
 
         this.componentWillUpdate = this.componentWillUpdate.bind(this);
-        //NEED?
-        //this.setState = this.setState.bind(this);
     }
 
     //FIXED BY CHAGNING FROM COMPOENTDIDTUPDATE
@@ -134,11 +115,6 @@ class Algorithm extends PureComponent {
         this.setState({latlngs: props.datafromapp.origins, methods: props.datafromapp.methods})
 
         // dense grid of points, into priorirty que
-
-
-        //PROPRS VS THIS.PROPS?        
-
-
 
         if(props.datafromapp.runalg && !this.state.didrunalg){
             if(this.state.latlngs.length==0){
@@ -153,7 +129,6 @@ class Algorithm extends PureComponent {
                 lats.push(latlngs[i][0])
                 lngs.push(latlngs[i][1])
             }
-
             var left=Math.min.apply(null,lngs),right=Math.max.apply(null,lngs),top=Math.max.apply(null,lats),bot=Math.min.apply(null,lats); //min of lat, max of lng etc
 
             console.log("running alg, with window")
@@ -161,12 +136,13 @@ class Algorithm extends PureComponent {
             console.log(right)
             console.log(top)
             console.log(bot)
+            //only work sthn hemispehre?
 
 
 
 
             //put limit on max density can choose,, and tell logner etc
-            var density = 3;
+            var density = 4;
 
 
 
@@ -204,16 +180,13 @@ class Algorithm extends PureComponent {
 
 
 
-
-            //MAKE SURE COPIED PROEPRLY ETC, SO DESTINATIOSN STILL EXISTS
-
-            //NOT REDNEREING?
             var destinationscopy = destinations.slice();
             //desitinations split
             var destinationssplits = [];
             while (destinationscopy.length > 0){
                 destinationssplits.push(destinationscopy.splice(0,3))
             }
+            //3x3 REQUESTS PER 2000
             console.log("destinationssplits")
             console.log(destinationssplits)
             console.log(destinations)
@@ -224,9 +197,11 @@ class Algorithm extends PureComponent {
             var thisorigintimes  = [];
             var originsindex =0;
             var destinationsplitsindex =0;
-            //for each origin and desitnations splits
 
-            console.log("pre time")
+            var timeblockcount = 0;
+            var totaltimeblocks = destinationssplits.length*origins.length
+            this.setState({timeblockcount: timeblockcount})
+            this.setState({totaltimeblocks: totaltimeblocks})
             timeblock();
             var that = this
             function timeblock () {  
@@ -284,11 +259,6 @@ class Algorithm extends PureComponent {
                     console.log(destinations[mininddex])
                     that.setState({finalpoint: destinations[mininddex]});
 
-                    //SET THE FINAL ADDRESS HERE
-
-
-
-
                     //THEN MAKE SURE BREAKS PROPERLY
                     //SHOULD BREAK SINCE NO MORE CALLS
 
@@ -314,8 +284,10 @@ class Algorithm extends PureComponent {
                     //CATCH NO RESULTS ERROR
                     //INCORRECT DURATION VALUE
 
+
                     //ADD departure_time paramter
                     //trnasit mode etc
+
 
                     var distanceapi = new window.google.maps.DistanceMatrixService;
                     distanceapi.getDistanceMatrix({
@@ -329,25 +301,35 @@ class Algorithm extends PureComponent {
                             alert('Error was: '+ status);
                             //IF OVER QUERY LIMIT THEN DEALY LONGER
                         }else{
-                            console.log("response length,, not conctacting last 3, for first origin")
-                            console.log(response.rows.length)
+                            console.log("response rows")
+                            console.log(response.rows)
                             for(var k = 0; k<response.rows.length;k++){
+                                if(response.rows[k].elements[k].duration ){
                                 thisorigintimes = thisorigintimes.concat(response.rows[k].elements[k].duration.value);
+                            }else{
+                                thisorigintimes=thisorigintimes.concat(Infinity)
+                                                            //WHEN 1 ORIGIN CANT GET TO A DESINTATION, REMOVE THAT DESITNATIO NFROM OSSIBEL?
+                                //destinationssplits[j][k].pop
                             }
+                            }
+
                         }
                     }
                     )
                     destinationsplitsindex++;
+                    timeblockcount++;
+                    that.setState({timeblockcount: timeblockcount})
                     timeblock();
                 }
 
          },2000);
+        //WHAT LEAST TIME CAN DO//destinationssplits.length*origins.length*1000);
+
     }
 
 
 
 
-        //WHAT LEAST TIME CAN DO//destinationssplits.length*origins.length*1000);
 
     }
 }
@@ -359,18 +341,10 @@ class Algorithm extends PureComponent {
 
 
         // sort by distance
-
-
     // iteratte through prioriety que search
-
-
 
     // but also try and make these travel times closer to eachoterh
 
-
-
-
-// return finalpoitn, dont need render function
 
 render()
 {
@@ -378,6 +352,7 @@ render()
     return(
         <div>
         <div>newprfinlptresult</div>
+        <div>{this.state.timeblockcount}{this.state.totaltimeblocks}</div>
         <a href={placeaddress} style={{color:'blue'}}>{placeaddress}</a>
         refresh for new search
         </div>
@@ -414,7 +389,7 @@ handleChange(event){
     var newforms = this.state.forms
     newforms.push(<AddressForm key={(this.state.forms.length).toString()} id = {(this.state.forms.length).toString()} callFromKids = {this.callFromKids} />)
     this.setState({forms: newforms});
-        //CHECK IDS NOT PASSING ERROR
+
         var neworigins = this.state.origins
         neworigins.push("")
         var newmethods = this.state.methods
@@ -432,7 +407,7 @@ handleChange(event){
         console.log("_")
         console.log(this.state)
         this.setState({runalg: true})
-        this.setState({submitted: "submitted, wait like 11 secs"})
+        this.setState({submitted: "submitted, wait while talks to google.."})
         console.log(this.state)
 
         //RENDERING STATE CHANGE, AND CALLING PASSING UPDATE AS PROPS, BEFORE, UPDATING THE STATE
@@ -460,7 +435,7 @@ handleChange(event){
 
           <button onClick={this.handleChange}>+</button>
 
-          <button onClick={this.handleSubmit}>_</button>
+          <button onClick={this.handleSubmit}>_submit</button>
 
           <div>{this.state.submitted}</div>
 
@@ -478,8 +453,6 @@ handleChange(event){
           </div>
 
         <a href="https://paypal.me/benmacintosh" style={{color:'blue'}}>https://paypal.me/benmacintosh</a>
-
-        <a> wait like 11 seconds after submitting '_' while algortihm talks to google </a>
         <Algorithm datafromapp={this.state}/>
 
 
