@@ -7,7 +7,7 @@ class AddressForm extends Component {
 
     constructor(props) {
         super(props);   
-        this.state = {value: "origin"+this.props.id, method: "", methods: ["TRANSIT","WALKING","DRIVING"], id: this.props.id, latlng: ["",""]};
+        this.state = {value: "origin"+this.props.id, method: "WALKING", methods: ["TRANSIT","WALKING<","DRIVING"], id: this.props.id, latlng: ["",""]};
 
         this.handleChange = this.handleChange.bind(this);
         this.onClickAuto1 = this.onClickAuto1.bind(this);
