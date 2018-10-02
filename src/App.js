@@ -7,12 +7,13 @@ class AddressForm extends Component {
 
     constructor(props) {
         super(props);   
-        this.state = {value: "origin"+this.props.id, method: "WALKING", methods: ["TRANSIT","WALKING<","DRIVING"], id: this.props.id, latlng: ["",""]};
+        this.state = {value: "origin"+this.props.id, method: "WALKING", methods: ["TRANSIT","WALKING<","DRIVING","BICYCLING"], id: this.props.id, latlng: ["",""]};
 
         this.handleChange = this.handleChange.bind(this);
         this.onClickAuto1 = this.onClickAuto1.bind(this);
         this.onClickAuto2 = this.onClickAuto2.bind(this);
         this.onClickAuto3 = this.onClickAuto3.bind(this);
+        this.onClickAuto4=this.onClickAuto4.bind(this);
         this.onClick= this.onClick.bind(this);
     }
 
@@ -40,22 +41,27 @@ class AddressForm extends Component {
     }
 
     onClickAuto1(event){
-        this.setState({methods:["TRANSIT","WALKING","DRIVING"]})
+        this.setState({methods:["TRANSIT","WALKING","DRIVING","BICYCLING"]})
         this.setState({method:this.state.methods[0]})
-        this.setState({methods:["TRANSIT<","WALKING","DRIVING"]})
+        this.setState({methods:["TRANSIT<","WALKING","DRIVING", "BICYCLING"]})
 
     }
     onClickAuto2(event){
-        this.setState({methods:["TRANSIT","WALKING","DRIVING"]})
+        this.setState({methods:["TRANSIT","WALKING","DRIVING","BICYCLING"]})
         this.setState({method: this.state.methods[1]})
-        this.setState({methods:["TRANSIT","WALKING<","DRIVING"]})
+        this.setState({methods:["TRANSIT","WALKING","DRIVING","BICYCLING"]})
 
     }
     onClickAuto3(event){
-        this.setState({methods:["TRANSIT","WALKING","DRIVING"]})
+        this.setState({methods:["TRANSIT","WALKING","DRIVING","BICYCLING"]})
         this.setState({method: this.state.methods[2]})
-        this.setState({methods:["TRANSIT","WALKING","DRIVING<"]})
+        this.setState({methods:["TRANSIT","WALKING","DRIVING<","BICYCLING"]})
 
+    }
+    onClickAuto4(event){
+        this.setState({methods:["TRANSIT","WALKING","DRIVING","BICYCLING"]})
+        this.setState({method: this.state.methods[3]})
+        this.setState({methods:["TRANSIT","WALKING","DRIVING","BICYCLING<"]})    
     }
     componentDidUpdate(props){
         console.log("address form did update")
@@ -79,6 +85,8 @@ class AddressForm extends Component {
             <a onClick={this.onClickAuto2} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[1]}</a>
             <a>, </a>
             <a onClick={this.onClickAuto3} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[2]}</a>
+            <a>, </a>
+            <a onClick={this.onClickAuto4} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[3]}</a>
 
             </div>
             );
@@ -428,6 +436,8 @@ handleChange(event){
     render() {
         return (
           <div>
+
+          <div>given starting points and transport methods, program finds the meeting point of shortest total travel time</div>
 
           <div>
           {this.state.forms}
