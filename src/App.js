@@ -157,7 +157,7 @@ class Algorithm extends PureComponent {
 
 
             var latdisc = Math.abs(top-bot)/density;
-            var lngdisc = latdisc;
+            var lngdisc = Math.abs(right-left)/density;
             console.log(lngdisc)
             var i, j;
             //start bottom left
@@ -182,8 +182,6 @@ class Algorithm extends PureComponent {
                 }
                 thislng = initlng;
             }
-            console.log("que")
-            console.log(que)
 
 
 
@@ -195,7 +193,7 @@ class Algorithm extends PureComponent {
                 destinationssplits.push(destinationscopy.splice(0,3))
             }
             //3x3 REQUESTS PER 2000
-            console.log("destinationssplits")
+            console.log("destinationssplits and destinations")
             console.log(destinationssplits)
             console.log(destinations)
 
