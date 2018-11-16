@@ -1,13 +1,23 @@
 import React, {Component, PureComponent} from 'react';
 import './App.css';
-import img from './img1.JPG'
+import img from './img1.png'
 
 
-class AddressForm extends Component {
+export default class App extends Component {
 
     constructor(props) {
         super(props);   
-        this.state = {value: "__"+this.props.id, method: "WALKING", methods: ["TRANSIT","WALKING<","DRIVING","BICYCLING"], id: this.props.id, latlng: ["",""]};
+
+        this.state = {origin: "__origin",
+        destination: "__destination",
+        method: "WALKING",
+        submitted: "",
+        methods: ["TRANSIT","WALKING<","DRIVING","BICYCLING"],
+        origlatlng: [{lat:0,lng:0}],
+        destlatlng: [{lat:0,lng:0}],
+        returnurl: "http://www.google.com/maps/place/",
+        time: "enter desired minutes to take for path (must be longer than google maps fastest time"}
+        ;
 
         this.handleChange = this.handleChange.bind(this);
         this.onClickAuto1 = this.onClickAuto1.bind(this);
@@ -15,11 +25,14 @@ class AddressForm extends Component {
         this.onClickAuto3 = this.onClickAuto3.bind(this);
         this.onClickAuto4=this.onClickAuto4.bind(this);
         this.onClick= this.onClick.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this)
+        this.handleTimeChange= this.handleTimeChange.bind(this)
     }
 
     handleChange(event){
-        this.setState({value: event.target.value});
-        var autocompleteapi = new window.google.maps.places.Autocomplete(document.getElementById(this.state.id));
+        this.setState({[event.target.name]: event.target.value});
+
+        var autocompleteapi = new window.google.maps.places.Autocomplete(document.getElementById(event.target.id));
         var latlng = ["",""]
         var tempsetstate = this.setState.bind(this)
 
@@ -37,8 +50,15 @@ class AddressForm extends Component {
             (place.address_components[2] && place.address_components[2].short_name || '')
             ].join(' ');
 
-            latlng = [place.geometry.location.lat(),place.geometry.location.lng()]
-            tempsetstate({value: address, latlng: latlng})
+            latlng = [{lat: place.geometry.location.lat(), lng: place.geometry.location.lng()}]
+            tempsetstate({[event.target.name]: address})
+            if([event.target.name]=="origin"){
+                tempsetstate({origlatlng: latlng})
+            }else if([event.target.name]=="destination"){
+                tempsetstate({destlatlng: latlng})
+            }
+
+            // latlng: latlng})
         })
     }
 
@@ -69,18 +89,83 @@ class AddressForm extends Component {
         console.log("address form did update")
         console.log(this.state)
         console.log(this.props)
-        this.props.callFromKids(this.state);
+    }
+
+    handleTimeChange(event){
+        var input = event.target.value
+
+        // GET TIME TAKES
+        var fastestTime = 20
+        if(input >>> 0 === parseFloat(input)){
+            this.setState({time: parseInt(input)})
+        }
     }
 
     onClick(event){
-        this.setState({value: ""})
+        this.setState({[event.target.name]: ""})
     }
+
+    handleSubmit(event){
+        this.setState({submitted: "fuck you"})
+
+        var fastestTime
+        setTimeout(function(){
+                var distanceapi = new window.google.maps.DistanceMatrixService;
+                distanceapi.getDistanceMatrix({
+                    origins: this.state.origlatlng,
+                    destinations: this.state.destlatlng,
+                    travelMode: this.state.method,//TRANSIT
+                    unitSystem: window.google.maps.UnitSystem.METRIC
+                },function(response,status){
+
+                    console.log("did soemthing api")
+                    if(status!=='OK'){
+                        alert('Error was: '+ status);
+                        //IF OVER QUERY LIMIT THEN DEALY LONGER
+                    }else{
+                        console.log("disance response")
+                        for(var k = 0; k<response.rows.length;k++){
+                            if(response.rows[k].elements[k].duration ){
+                                fastestTime = response.rows[k].elements[k].duration.value
+                        }else{
+                            alert("uncreachable location")
+                        }
+                        }
+                    }
+                }
+                )
+            }
+            )
+        console.log(fastestTime)
+
+            // // else{
+//             alert('fastest path is '+fastestTime)
+//         }
+
+
+        // send and return from flask
+        //             var placeaddress = "http://www.google.com/maps/place/"+this.state.finalpoint.lat+","+this.state.finalpoint.lng;
+
+    // }
+
+}
+
+
+
 
     render(){
         return(
             <div>
 
-            <input type = "text" id={this.state.id} value = {this.state.value} style = {{width:222}} onChange = {this.handleChange} onClick={this.onClick} />
+          <div>randomise a variation on shortest route that takes a certain time</div>
+
+
+            <input type = "text" id="0" name = "origin" value = {this.state.origin} style = {{width:222, color:"grey"}} onChange = {this.handleChange} onClick={this.onClick} />
+            <div></div>
+            <input type = "text" id="1" name = "destination" value = {this.state.destination} style = {{width:222, color:"grey"}} onChange = {this.handleChange} onClick={this.onClick} />
+            <div></div>
+            <input type = "text" id="2" name = "time" value = {this.state.time} style = {{width:222, color:"grey"}} onChange = {this.handleTimeChange} onClick={this.onClick} />
+            <div></div>
 
             <a onClick={this.onClickAuto1} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[0]}</a>
             <a>, </a>
@@ -90,10 +175,34 @@ class AddressForm extends Component {
             <a>, </a>
             <a onClick={this.onClickAuto4} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[3]}</a>
 
-            </div>
-            );
+            <div></div>
+          <button onClick={this.handleSubmit}>_submit</button>
+            <div></div>
+
+          <a href="https://google.com" style={{color:'blue'}}>google</a>
+          <img src={img} alt="" width="222"/>
+
+        <a href="https://paypal.me/benmacintosh" style={{color:'blue'}}>https://paypal.me/benmacintosh</a>
+        <div></div>
+
+        <div>{this.state.submitted}</div>
+        <a href={this.state.returnurl} style={{color:'blue'}}>{this.state.returnurl}</a>
+
+
+        </div>
+        )
     }
+
 }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -400,83 +509,4 @@ render()
         );
 }
 
-}
-
-
-
-
-
-
-
-
-
-
-export default class App extends Component {
-    constructor(props){
-        super(props);
-        this.state = {forms: [<AddressForm callFromKids = {this.callFromKids} key ="0" id="origin"/>,<AddressForm callFromKids = {this.callFromKids} key="1" id="destination"/>],
-        origin: ["",""],
-        destination: ["",""],
-        methods: ["",""],
-        runalg: false,
-        submitted: ""
-    }
-
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit=this.handleSubmit.bind(this);
-    this.callFromKids = this.callFromKids.bind(this);
-}
-
-handleChange(event){
-
-    }
-
-    handleSubmit(event){
-        console.log("_")
-        console.log(this.state)
-        this.setState({runalg: true})
-        this.setState({submitted: "submitted, wait while talks to google.."})
-        console.log(this.state)
-
-        //RENDERING STATE CHANGE, AND CALLING PASSING UPDATE AS PROPS, BEFORE, UPDATING THE STATE
-    }
-
-    callFromKids = (data) =>{
-        console.log("data sfrom parentpersecitve, just from recent change")
-        console.log(data)
-        var neworigins = this.state.origin;
-        neworigins[data.id]=data.latlng;
-        var newmethods = this.state.methods;
-        newmethods[data.id]=data.method;
-        this.setState({origins: neworigins, methods: newmethods })
-        // only update from unqieu kids
-    }
-
-
-    render() {
-        return (
-          <div>
-
-          <div>given starting points and transport methods, program approximates the meeting point of shortest total travel time</div>
-
-          <div>
-          {this.state.forms}
-          </div>
-
-          <button onClick={this.handleSubmit}>_submit</button>
-
-          <div>{this.state.submitted}</div>
-
-          <a href="https://google.com" style={{color:'blue'}}>google</a>
-          <img src={img} alt="" width="88"/>
-
-        <a href="https://paypal.me/benmacintosh" style={{color:'blue'}}>https://paypal.me/benmacintosh</a>
-        <Algorithm datafromapp={this.state}/>
-
-
-    {/*algortihm, renderonce    show map*/}
-
-    </div>
-    );
-}
 }
