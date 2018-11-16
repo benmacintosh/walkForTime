@@ -7,7 +7,7 @@ class AddressForm extends Component {
 
     constructor(props) {
         super(props);   
-        this.state = {value: "origin"+this.props.id, method: "WALKING", methods: ["TRANSIT","WALKING<","DRIVING","BICYCLING"], id: this.props.id, latlng: ["",""]};
+        this.state = {value: "__"+this.props.id, method: "WALKING", methods: ["TRANSIT","WALKING<","DRIVING","BICYCLING"], id: this.props.id, latlng: ["",""]};
 
         this.handleChange = this.handleChange.bind(this);
         this.onClickAuto1 = this.onClickAuto1.bind(this);
@@ -26,6 +26,8 @@ class AddressForm extends Component {
         //make so doesnt call after EVERY KEYSTROKE  BTU AFTER SOME TIME delay
 
         //CHECK NEARBY USER
+
+        // also test leichard,t to therses frined
 
         window.google.maps.event.addListener(autocompleteapi, 'place_changed', function () {
             var place = autocompleteapi.getPlace()
@@ -49,7 +51,7 @@ class AddressForm extends Component {
     onClickAuto2(event){
         this.setState({methods:["TRANSIT","WALKING","DRIVING","BICYCLING"]})
         this.setState({method: this.state.methods[1]})
-        this.setState({methods:["TRANSIT","WALKING","DRIVING","BICYCLING"]})
+        this.setState({methods:["TRANSIT","WALKING<","DRIVING","BICYCLING"]})
 
     }
     onClickAuto3(event){
@@ -78,7 +80,7 @@ class AddressForm extends Component {
         return(
             <div>
 
-            <input type = "text" id={this.state.id} value = {this.state.value} onChange = {this.handleChange} onClick={this.onClick} />
+            <input type = "text" id={this.state.id} value = {this.state.value} style = {{width:222}} onChange = {this.handleChange} onClick={this.onClick} />
 
             <a onClick={this.onClickAuto1} style={{color:'blue', cursor: 'pointer', textDecorationLine: 'underline'}}>{this.state.methods[0]}</a>
             <a>, </a>
@@ -128,7 +130,12 @@ class Algorithm extends PureComponent {
             if(this.state.latlngs.length==0){
                 alert("need atleast 2 origins")
             }
+            console.log("didrunalg?")
+            console.log(this.state)
             this.setState({didrunalg: true})
+            console.log(this.state)
+            // this not working here
+
             var latlngs = this.state.latlngs;
             var methods = this.state.methods;
 
@@ -172,19 +179,46 @@ class Algorithm extends PureComponent {
             var que = [];
 
             var destinations = [];
-            for(i=0; i<density;i++){
-                thislat = thislat+latdisc;
-                for(j=0;j<density;j++){
-                    thislng = thislng+lngdisc;
+            for(i=0; i<=density;i++){
+                console.log("this lat then lng")
+                console.log(thislat)
+                for(j=0;j<=density;j++){
+                    console.log(thislng)
                     que.push([thislat,thislng]);
 
                     destinations.push({lat: thislat, lng: thislng});
+                    thislng = thislng+lngdisc;
                 }
                 thislng = initlng;
+                thislat = thislat+latdisc;
+
             }
 
 
 
+    // timesFromAsToB(As,B){
+
+
+    //         var Ascopy = As.slice();
+    //         var As_splits = [];
+    //         while (Ascopy.length > 0){
+    //             As_splits.push(Ascopy.splice(0,25))
+    //         }
+
+    //         var times = []
+    //         var As_index = 0;
+    //         function timeblock(){
+    //             if(As_index==As_splits.length){
+                    
+    //             }
+    //             setTimeout(function(){
+
+    //             })
+
+    //         }
+
+
+    // }
 
             var destinationscopy = destinations.slice();
             //desitinations split
@@ -244,10 +278,11 @@ class Algorithm extends PureComponent {
                         for(var j = 0; j<times[0].length; j++){
                         //through each destination,, then through each origin and add time from each different locaiton to get there
                         for (var i = 0; i<times.length;i++){
-                            if(typeof(times[i][j])!=="undefined"){//TEMP MANUAL DEAL WITH ASYNCROHICTY LEADING TO SOME UNDEFINED
+                            if(typeof(times[i][j])!=="UNDEFINED"){//TEMP MANUAL DEAL WITH ASYNCROHICTY LEADING TO SOME UNDEFINED
                                 thistime = thistime+times[i][j];
                             }
                         }
+                        console.log(thistime)
                         
                         if(thistime<minseconds){
                             console.log("reupdate min destination")
@@ -313,6 +348,7 @@ class Algorithm extends PureComponent {
                                 if(response.rows[k].elements[k].duration ){
                                 thisorigintimes = thisorigintimes.concat(response.rows[k].elements[k].duration.value);
                             }else{
+                                console.log('Infinity')
                                 thisorigintimes=thisorigintimes.concat(Infinity)
                                                             //WHEN 1 ORIGIN CANT GET TO A DESINTATION, REMOVE THAT DESITNATIO NFROM OSSIBEL?
                                 //destinationssplits[j][k].pop
@@ -357,7 +393,6 @@ render()
     var placeaddress = "http://www.google.com/maps/place/"+this.state.finalpoint.lat+","+this.state.finalpoint.lng;
     return(
         <div>
-        <div>newprfinlptresult</div>
         <div>{this.state.timeblockcount}{this.state.totaltimeblocks}</div>
         <a href={placeaddress} style={{color:'blue'}}>{placeaddress}</a>
         refresh for new search
@@ -379,8 +414,9 @@ render()
 export default class App extends Component {
     constructor(props){
         super(props);
-        this.state = {forms: [<AddressForm callFromKids = {this.callFromKids} key ="0" id="0"/>,<AddressForm callFromKids = {this.callFromKids} key="1" id="1"/>],
-        origins: ["",""],
+        this.state = {forms: [<AddressForm callFromKids = {this.callFromKids} key ="0" id="origin"/>,<AddressForm callFromKids = {this.callFromKids} key="1" id="destination"/>],
+        origin: ["",""],
+        destination: ["",""],
         methods: ["",""],
         runalg: false,
         submitted: ""
@@ -392,21 +428,7 @@ export default class App extends Component {
 }
 
 handleChange(event){
-    var newforms = this.state.forms
-    newforms.push(<AddressForm key={(this.state.forms.length).toString()} id = {(this.state.forms.length).toString()} callFromKids = {this.callFromKids} />)
-    this.setState({forms: newforms});
 
-        var neworigins = this.state.origins
-        neworigins.push("")
-        var newmethods = this.state.methods
-        newmethods.push("")
-        this.setState({origins: neworigins, methods: newmethods});
-
-    console.log("state after +")
-    console.log(this.state)
-
-        //DONT NEED?
-        this.forceUpdate();
     }
 
     handleSubmit(event){
@@ -422,7 +444,7 @@ handleChange(event){
     callFromKids = (data) =>{
         console.log("data sfrom parentpersecitve, just from recent change")
         console.log(data)
-        var neworigins = this.state.origins;
+        var neworigins = this.state.origin;
         neworigins[data.id]=data.latlng;
         var newmethods = this.state.methods;
         newmethods[data.id]=data.method;
@@ -435,30 +457,18 @@ handleChange(event){
         return (
           <div>
 
-          <div>given starting points and transport methods, program finds the meeting point of shortest total travel time</div>
+          <div>given starting points and transport methods, program approximates the meeting point of shortest total travel time</div>
 
           <div>
           {this.state.forms}
           </div>
 
-          <button onClick={this.handleChange}>+</button>
-
           <button onClick={this.handleSubmit}>_submit</button>
 
           <div>{this.state.submitted}</div>
 
-          <div>new precedence</div>
-          <div>new</div>
-          <div>leaving right now</div>
           <a href="https://google.com" style={{color:'blue'}}>google</a>
-          <div></div>
-
           <img src={img} alt="" width="88"/>
-
-          <div></div>
-          <div>
-          eth0x9f4bA31a5384d2d8758818582c99D6635dB17Cf5, googleapi costs some gold coins
-          </div>
 
         <a href="https://paypal.me/benmacintosh" style={{color:'blue'}}>https://paypal.me/benmacintosh</a>
         <Algorithm datafromapp={this.state}/>

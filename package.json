@@ -1,8 +1,7 @@
 {
-  "name": "meetingPointOfShortestTravel",
-  "version": "0.1.0",
+  "name": "walkForTime", "version": "0.1.0",
   "private": true,
-  "homepage": "https://benmacintosh.github.io/meetingPointOfShortestTravel",
+  "homepage": "https://benmacintosh.github.io/walkForTime",
   "dependencies": {
     "gh-pages": "^1.2.0",
     "react": "^16.4.2",
